@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>University Timetable</title>
+    <style>
+        h1 {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: Arial, Helvetica, sans-serif;
+            empty-cells: hide;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>University Timetable - Year {{ year }}</h1>
+    <div>
+        <button onclick="filterByYear(1)">Year 1</button>
+        <button onclick="filterByYear(2)">Year 2</button>
+        <button onclick="filterByYear(3)">Year 3</button>
+    </div>
+    <br>
+    <table>
+        <tr>
+            <th>Day</th>
+            <th>Time</th>
+            <th>Course</th>
+            <th>Course type</th>
+            <th>Room</th>
+            <th>Instructor</th>
+            <th>Week Type</th>
+        </tr>
+        <tr>
+            <td colspan="7" style="border: 0px;"></td>
+        </tr>
+        {% load timetable_filters %}
+        {% for day in days %}
+            {% for hour in hours %}
+                <tr>
+                    {% if forloop.first %}
+                    <td rowspan="5">{{ day }}</td>
+                    {% endif %}
+                    <td>{{ hour.start_time }} - {{ hour.end_time }}</td>
+                    {% with timetables|filter_by_day:day|filter_by_hour:hour.start_time as filtered_timetables %}
+                        {% if filtered_timetables %}
+                            {% for timetable in filtered_timetables %}
+                                <td>
+                                    {% if timetable.class_type == 'Dual Class' %}
+                                        {{ timetable.course.name }} <br> {{ timetable.second_course.name }}
+                                    {% elif timetable.class_type == 'Different Subgroups' %}
+                                        {% if timetable.course %}
+                                            {{ timetable.course.name }} (subgroup 1)
+                                        {% else %}
+                                            No class (subgroup 1)
+                                        {% endif %}
+                                        {% if timetable.second_course %}
+                                            <br>{{ timetable.second_course.name }} (subgroup 2)
+                                        {% else %}
+                                            <br>No class (subgroup 2)
+                                        {% endif %}
+                                    {% else %}
+                                        {{ timetable.course.name }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if timetable.class_type == 'Dual Class' %}
+                                        {{ timetable.course_type }} <br> {{ timetable.second_course_type }}
+                                    {% elif timetable.class_type == 'Different Subgroups' %}
+                                        {{ timetable.course_type }} <br> {{ timetable.second_course_type }}
+                                    {% else %}
+                                        {{ timetable.course_type }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if timetable.class_type == 'Dual Class' %}
+                                        {{ timetable.room.name }} <br> {{ timetable.second_room.name }}
+                                    {% elif timetable.class_type == 'Different Subgroups' %}
+                                        {{ timetable.room.name }} <br> {{ timetable.second_room.name }}
+                                    {% else %}
+                                        {{ timetable.room.name }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if timetable.class_type == 'Dual Class' %}
+                                        {{ timetable.instructor.name }} <br> {{ timetable.second_instructor.name }}
+                                    {% elif timetable.class_type == 'Different Subgroups' %}
+                                        {{ timetable.instructor.name }} <br> {{ timetable.second_instructor.name }}
+                                    {% else %}
+                                        {{ timetable.instructor.name }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if timetable.class_type == 'Dual Class' %}
+                                        {{ timetable.week_type }} <br> {{ timetable.second_week_type }}
+                                    {% elif timetable.class_type == 'Different Subgroups' %}
+                                        {{ timetable.week_type }} <br> {{ timetable.second_week_type }}
+                                    {% else %}
+                                        {{ timetable.week_type }}
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        {% else %}
+                            <td colspan="5" style="background-color: lightgray;">No class</td>
+                        {% endif %}
+                    {% endwith %}
+                </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="7" style="border: 0px;"></td>
+            </tr>
+        {% endfor %}
+    </table>
+    <script>
+        function filterByYear(year) {
+            window.location.href = `?year=${year}`;
+        }
+    </script>
+</body>
+</html>
